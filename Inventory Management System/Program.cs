@@ -1,18 +1,47 @@
-﻿using Inventory_Management_System.Models;
+﻿using Inventory_Management_System.Interfaces;
+using Inventory_Management_System.Models;
 using Inventory_Management_System.Services;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Inventory_Management_System
 {
     public class Program
     {
-        private static InventoryService _inventory = new InventoryService();
+        private static IInventoryService _inventory;
 
         public static void Main(string[] args)
+        {
+            Console.WriteLine("Choose database to use:");
+            Console.WriteLine("1. SQL Server");
+            Console.WriteLine("2. MongoDB");
+            Console.Write("Enter choice: ");
+            var dbChoice = Console.ReadLine();
+
+            switch (dbChoice)
+            {
+                case "1":
+                    Console.Write("Enter SQL Server connection string: ");
+                    var sqlConnectionString = Console.ReadLine();
+                    _inventory = new SqlProductService(sqlConnectionString);
+                    break;
+
+                case "2":
+                    Console.Write("Enter MongoDB connection string: ");
+                    var mongoConnectionString = Console.ReadLine();
+                    Console.Write("Enter MongoDB database name: ");
+                    var mongoDatabaseName = Console.ReadLine();
+                    _inventory = new MongoProductService(mongoConnectionString, mongoDatabaseName);
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice. Exiting program.");
+                    return;
+            }
+
+            RunProgramLoop();
+        }
+
+        private static void RunProgramLoop()
         {
             while (true)
             {
@@ -74,6 +103,7 @@ namespace Inventory_Management_System
 
             var product = new Product(name, price, quantity);
             _inventory.AddProduct(product);
+            Console.WriteLine($"Product {name} added successfully.");
         }
 
         private static void ViewProducts()
@@ -103,14 +133,28 @@ namespace Inventory_Management_System
                 newQuantity = quantity;
             }
 
-            _inventory.EditProduct(name, newName, newPrice, newQuantity);
+            if (_inventory.EditProduct(name, newName, newPrice, newQuantity))
+            {
+                Console.WriteLine($"Product {name} updated successfully.");
+            }
+            else
+            {
+                Console.WriteLine($"Product {name} not found.");
+            }
         }
 
         private static void DeleteProduct()
         {
             Console.Write("Enter product name to delete: ");
             var name = Console.ReadLine();
-            _inventory.DeleteProduct(name);
+            if (_inventory.DeleteProduct(name))
+            {
+                Console.WriteLine($"Product {name} deleted successfully.");
+            }
+            else
+            {
+                Console.WriteLine($"Product {name} not found.");
+            }
         }
 
         private static void SearchProduct()
@@ -129,5 +173,4 @@ namespace Inventory_Management_System
             }
         }
     }
-
 }

@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Inventory_Management_System.Models
 {
     public class Product
     {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
+
         public string Name { get; set; }
         public decimal Price { get; set; }
         public int Quantity { get; set; }
@@ -24,5 +25,4 @@ namespace Inventory_Management_System.Models
             return $"Name: {Name}, Price: {Price:C}, Quantity: {Quantity}";
         }
     }
-
 }
